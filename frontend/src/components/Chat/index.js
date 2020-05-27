@@ -7,6 +7,7 @@ import './styles.css'
 import Header from '../Header'
 import Input from '../Input'
 import Messages from '../Messages'
+import UsersOnline from '../UsersOnline'
 
 let socket
 
@@ -14,6 +15,7 @@ function Chat({location}){
     const serverAdress = 'localhost:5500'
     const [name, setName] = useState('')
     const [room, setRoom] = useState('')
+    const [users, setUsers] = useState([])
     const [message, setMessage] = useState('')
     const [messages, setMessages] = useState([])
 
@@ -35,10 +37,14 @@ function Chat({location}){
         }
     }, [serverAdress, location.search])
 
+    
     useEffect(() => {
         socket.once('message', message => {
-            console.log('Message Coming!')
             setMessages([...messages, message])
+        })
+
+        socket.on('roomData', ({users}) => {
+            setUsers(users)
         })
     }, [messages])
 
@@ -46,7 +52,6 @@ function Chat({location}){
         e.preventDefault()
 
         if(message){
-            console.log(messages)
             socket.emit('sendMessage', message, () => setMessage(''))
         }
     }
@@ -58,6 +63,7 @@ function Chat({location}){
                 <Messages messages={messages} name={name}/>
                 <Input message={message} setMessage={setMessage} sendMessage={sendMessage}/>
             </div>
+                <UsersOnline users={users}/>
         </div>
     )
 }
